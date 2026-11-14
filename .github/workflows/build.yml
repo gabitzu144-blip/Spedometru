@@ -1,0 +1,33 @@
+name: Build jar
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dezarhivează src.zip dacă există
+        run: |
+          if [ -f src.zip ]; then
+            rm -rf src _tmp && mkdir _tmp
+            unzip -q src.zip -d _tmp
+            if [ -d _tmp/src ]; then mv _tmp/src src
+            elif [ -d _tmp/main ]; then mkdir src && mv _tmp/main src/main
+            else echo "Structura zip-ului e neașteptată:"; find _tmp | head -30; exit 1; fi
+          fi
+          find src -type f | head -30
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.8
+      - run: gradle build --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vehicle-speedo-jar
+          path: build/libs/vehicle-speedo-1.20.1-*.jar
