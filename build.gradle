@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+group = 'ro.speedo'
+version = '1.0.0'
+base { archivesName = 'vehicle-speedo-1.20.1' }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            mods { vehiclespeedo { source sourceSets.main } }
+        }
+    }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.3.0'
+    // Nu depindem la compilare de Vehicle / Immersive Vehicles / Framework:
+    // datele sunt citite prin reflecție (vezi ro.speedo.adapter).
+    // Pentru test în `runClient`, pune jar-urile celor 3 moduri în folderul run/mods/.
+}
+
+tasks.named('jar') {
+    manifest { attributes 'Implementation-Title': 'vehicle-speedo', 'Implementation-Version': project.version }
+    finalizedBy 'reobfJar'
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
